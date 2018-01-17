@@ -41,6 +41,9 @@ int duration = 6000; // (seconds) initial simulated duration of pulses
 // Interrupt control flag
 bool pulseFlag = false;
 
+// Particle Functions
+int resetDevice(String command);
+
 void setup() {
   Serial.begin(9600);
 
@@ -53,6 +56,9 @@ void setup() {
   Particle.variable("power", power);
   Particle.variable("elapsedEngy", elapsedEnergy);
   Particle.variable("dailyCost", dailyCost);
+
+  // Set Particle Functions
+  Particle.function("reset", resetDevice);
 
   // Set ubidots device label and ID
   ubidots.setDeviceName(DEVICE_ID);
