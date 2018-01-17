@@ -100,7 +100,7 @@ void loop() {
   if (thishour == 0 && thisminute == 0 &&
       lasthour == 23 && lastminute == 59 ) {
     elapsedEnergy == 0;
-    Serial.println("> Midnight. Elapsed energy reset.");
+    Particle.publish("Midnight. Elapsed energy reset.");
   }
   Serial.print("> Power: ");
   Serial.println(power);
