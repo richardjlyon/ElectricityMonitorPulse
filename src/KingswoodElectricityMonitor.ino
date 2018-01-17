@@ -39,13 +39,16 @@ int thishour, lasthour, thisminute, lastminute;
 int state = 0; // used to toggle led
 int duration = 6000; // (seconds) initial simulated duration of pulses
 
+// Interrupt control flag
+bool pulseFlag = false;
+
 void setup() {
   Serial.begin(9600);
 
   // Configure pins
   pinMode(ledPin, OUTPUT);
   pinMode(interruptPin, INPUT_PULLDOWN);
-  attachInterrupt(interruptPin, calculate_energy, RISING);
+  attachInterrupt(interruptPin, flag_pulse, RISING);
 
   // Set Particle variables
   Particle.variable("power", power);
@@ -73,7 +76,12 @@ void setup() {
 }
 
 void loop() {
-  delay(1000);
+
+  if (pulseFlag == true) {
+    calculate_energy();
+    toggle_led();
+    pulseFlag = false;
+  }
 
   // if we've gone through midnight, reset elapsedEnergy
   lasthour = thishour;
@@ -93,6 +101,10 @@ void loop() {
 }
 
 // Interrupt handler. Called on the rising esge of a flash.
+void flag_pulse(){
+  pulseFlag = true;
+}
+
 void calculate_energy() {
 
   // Estimate the time in milliseconds since the last pulse (pulseInterval)
@@ -110,8 +122,6 @@ void calculate_energy() {
 
   // calculate cost since midnight
   dailyCost = STANDING_CHARGE + elapsedEnergy*UNIT_COST;
-
-  toggle_led();
 }
 
 // toggle onboard LED to represent received pulses
