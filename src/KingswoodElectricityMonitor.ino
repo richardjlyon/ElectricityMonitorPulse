@@ -15,8 +15,7 @@
 
 // Ubidots configuration
 #include <Ubidots.h>
-#define DEVICE_ID "ELMON"
-#define DEVICE_LABEL "2a001d000d47343438323536"
+#define DEVICE_ID "elmon"
 #define TOKEN "A1E-Ke3IBMVqyEUnzfGP9aDQRAmY2vGweM"  // Ubidots TOKEN
 Ubidots ubidots(TOKEN);
 
