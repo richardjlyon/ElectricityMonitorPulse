@@ -9,6 +9,12 @@
  * dailyCost: (pence) daily energy cost
  */
 
+// Time between activating WiFi and connecting to Particle; trial and error
+#define WIFI_SETTLING_TIME 1000
+// Time between connecting to Particle and trying to publish anything
+// Withouy any delay, device reverts to 'Listening' mode
+#define PUBLISH_SETTLING_TIME 5 * 1000
+
 // Energy contract cost (Pure Planet, 01 Jan 2018)
 #define STANDING_CHARGE 32.877; // (pence / day) energy contract standing charge
 #define UNIT_COST 11.193; // (pence / kWh) energy contract unit cost
@@ -28,21 +34,30 @@ double power; // (Watts) current power consumption
 double elapsedEnergy; // (kWh) energy consumption since midnight
 double dailyCost; // (pence) daily energy cost
 
-// Intermediate variables
+// Power intermediate variables
 int ppwh = 1; // (pulse per Wh)
 long pulseCount = 0; // keeps track of the number of pulses detected
 unsigned long pulseTime, lastTime, pulseInterval; // milliseconds
 double standingCharge = STANDING_CHARGE; // (pence) energy contract standing charge
 double unitCost = UNIT_COST; // (pence / kWh) energy contract unit cost (pence / kWh)
+
+// WiFi cycle control variables
+int cycleDurationMillis;
+long lastPulseTimeMillis;
+long connectStartMillis;
+
+// Midnight calculation variables
 int thishour, lasthour, thisminute, lastminute;
+
+// Led pulse variable
 int state = 0; // used to toggle led
-int duration = 6000; // (seconds) initial simulated duration of pulses
 
 // Interrupt control flag
 bool pulseFlag = false;
 
 // Particle Functions
 int resetDevice(String command);
+int setCycleDuration(String duration);
 
 void setup() {
   Serial.begin(9600);
@@ -56,9 +71,11 @@ void setup() {
   Particle.variable("power", power);
   Particle.variable("elapsedEngy", elapsedEnergy);
   Particle.variable("dailyCost", dailyCost);
+  Particle.variable("CycleDurn", cycleDurationMillis);
 
   // Set Particle Functions
   Particle.function("reset", resetDevice);
+  Particle.function("setCycle", setCycleDuration);
 
   // Set ubidots device label and ID
   ubidots.setDeviceName(DEVICE_ID);
@@ -66,27 +83,54 @@ void setup() {
   // Initialise pulseTime;
   pulseTime = millis();
 
+  // Initialise WiFi cycle duration
+  setCycleDuration("60000");
+  lastPulseTimeMillis = millis();
+
   // Initialise variables to detect midnight
   thishour = Time.hour();
   thisminute = Time.minute();
   lasthour = thishour;
   lastminute = thisminute;
-
 }
 
 void loop() {
 
+  // Interrupt handler for pulse; calculate energy and power
   if (pulseFlag == true) {
     calculate_energy();
     toggle_led();
     pulseFlag = false;
+  }
+
+  // WiFi cycle handler
+  if ( (millis() - lastPulseTimeMillis) > cycleDurationMillis) {
+    Serial.println("------------");
+
+    connectStartMillis = millis();
+    Serial.println("> WiFi.on() ... ");
+    WiFi.on();
+    delay(WIFI_SETTLING_TIME); // allow wifi to connect
+    Serial.println("> Particle.connect() ... ");
+    Particle.connect();
+    Serial.print("> Connected: ");
+    Serial.println(millis() - connectStartMillis);
+
+    Serial.println("> Publish delay...");
+    delay(PUBLISH_SETTLING_TIME); // to allow publish events
+
     // Set ubidots variables
     ubidots.add("power", power);
     ubidots.add("elapsedEnergy", elapsedEnergy);
     ubidots.add("dailyCost", dailyCost);
     if(ubidots.sendAll()){
-      Particle.publish("Ubidots updated");
+      Serial.println("> Ubidots updated");
     };
+
+    Serial.println("> WiFi.off()");
+    WiFi.off();
+
+    lastPulseTimeMillis = millis();
   }
 
   // if we've gone through midnight, reset elapsedEnergy
@@ -100,10 +144,7 @@ void loop() {
   if (thishour == 0 && thisminute == 0 &&
       lasthour == 23 && lastminute == 59 ) {
     elapsedEnergy == 0;
-    Particle.publish("Midnight. Elapsed energy reset.");
   }
-  Serial.print("> Power: ");
-  Serial.println(power);
 }
 
 // Interrupt handler. Called on the rising esge of a flash.
@@ -134,6 +175,11 @@ void calculate_energy() {
 void toggle_led() {
   digitalWrite(ledPin, (state) ? HIGH : LOW);
   state = !state;
+}
+
+int setCycleDuration(String duration) {
+  cycleDurationMillis = atoi(duration) - WIFI_SETTLING_TIME - PUBLISH_SETTLING_TIME;
+  return cycleDurationMillis;
 }
 
 int resetDevice(String command) {
