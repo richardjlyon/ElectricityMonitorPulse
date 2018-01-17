@@ -71,6 +71,7 @@ void setup() {
   thisminute = Time.minute();
   lasthour = thishour;
   lastminute = thisminute;
+
 }
 
 void loop() {
