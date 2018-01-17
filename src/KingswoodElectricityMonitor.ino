@@ -80,7 +80,6 @@ void loop() {
     calculate_energy();
     toggle_led();
     pulseFlag = false;
-    Particle.publish("Pulse detected");
     // Set ubidots variables
     ubidots.add("power", power);
     ubidots.add("elapsedEnergy", elapsedEnergy);
