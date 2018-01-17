@@ -56,7 +56,6 @@ void setup() {
   Particle.variable("dailyCost", dailyCost);
 
   // Set ubidots device label and ID
-  ubidots.setDeviceLabel(DEVICE_LABEL);
   ubidots.setDeviceName(DEVICE_ID);
 
   // Set ubidots variables
