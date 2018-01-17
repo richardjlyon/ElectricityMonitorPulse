@@ -63,12 +63,6 @@ void setup() {
   // Set ubidots device label and ID
   ubidots.setDeviceName(DEVICE_ID);
 
-  // Set ubidots variables
-  ubidots.add("power", power);
-  ubidots.add("elapsedEnergy", elapsedEnergy);
-  ubidots.add("dailyCost", dailyCost);
-  ubidots.sendAll();
-
   // Initialise pulseTime;
   pulseTime = millis();
 
@@ -85,6 +79,14 @@ void loop() {
     calculate_energy();
     toggle_led();
     pulseFlag = false;
+    Particle.publish("Pulse detected");
+    // Set ubidots variables
+    ubidots.add("power", power);
+    ubidots.add("elapsedEnergy", elapsedEnergy);
+    ubidots.add("dailyCost", dailyCost);
+    if(ubidots.sendAll()){
+      Particle.publish("Ubidots updated");
+    };
   }
 
   // if we've gone through midnight, reset elapsedEnergy
