@@ -135,3 +135,10 @@ void toggle_led() {
   digitalWrite(ledPin, (state) ? HIGH : LOW);
   state = !state;
 }
+
+int resetDevice(String command) {
+  Particle.publish("Resetting device");
+  delay(1000);
+  System.reset();
+  return 1;
+}
