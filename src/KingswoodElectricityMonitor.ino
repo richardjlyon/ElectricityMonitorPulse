@@ -90,8 +90,6 @@ void setup() {
   // Initialise variables to detect midnight
   thishour = Time.hour();
   thisminute = Time.minute();
-  lasthour = thishour;
-  lastminute = thisminute;
 }
 
 void loop() {
@@ -133,18 +131,7 @@ void loop() {
     lastPulseTimeMillis = millis();
   }
 
-  // if we've gone through midnight, reset elapsedEnergy
-  lasthour = thishour;
-  lastminute = thisminute;
-  thishour = Time.hour();
-  thisminute = Time.minute();
-  // this is only true minute after midnight - reset elapsedEnergy
-  // Note: We can't guarantee we'll be at exactly 0 seconds after midnight
-  // so this will fail only after the first minute has elapsed.  Assume negligible.
-  if (thishour == 0 && thisminute == 0 &&
-      lasthour == 23 && lastminute == 59 ) {
-    elapsedEnergy == 0;
-  }
+
 }
 
 // Interrupt handler. Called on the rising esge of a flash.
@@ -153,7 +140,6 @@ void flag_pulse(){
 }
 
 void calculate_energy() {
-
   // Estimate the time in milliseconds since the last pulse (pulseInterval)
   lastTime = pulseTime;
   pulseTime = millis();
@@ -165,16 +151,30 @@ void calculate_energy() {
   power = (3600000.0 / pulseInterval)/ppwh;
 
   // calculate energy used since midnight
-  elapsedEnergy = (1.0*pulseCount/(ppwh*1000)); //multiply by 1000 to convert pulses per wh to kwh
+  if (isMidnight) {
+    elapsedEnergy == 0;
+  } else {
+    elapsedEnergy = (1.0*pulseCount/(ppwh*1000)); //multiply by 1000 to convert pulses per wh to kwh
+  }
 
   // calculate cost since midnight
   dailyCost = STANDING_CHARGE + elapsedEnergy*UNIT_COST;
+
 }
 
 // toggle onboard LED to represent received pulses
 void toggle_led() {
   digitalWrite(ledPin, (state) ? HIGH : LOW);
   state = !state;
+}
+
+// Reset elapsedEnergy if we've gone through midnight
+bool isMidnight() {
+    thishour = Time.hour();
+    thisminute = Time.minute();
+    // True for the e
+    // so this will fail only after the first minute has elapsed.  Assume negligible.
+    return (thishour == 0 && thisminute == 0);
 }
 
 int setCycleDuration(String duration) {
