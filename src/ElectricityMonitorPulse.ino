@@ -1,5 +1,5 @@
 /*
- * Project KingswoodEnergyMonitor
+ * Project EnergyMonitorPulse
  * Description: Calculates electricity use from a meter's pulse output
  * Author: Richard Lyon
  * Date: 10 Jan 2018
