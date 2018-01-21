@@ -91,16 +91,12 @@ void loop() {
 
   // WiFi cycle handler
   if ( (millis() - lastPulseTimeMillis) > cycleDurationMillis) {
-    // Serial.println("------------");
     connectStartMillis = millis();
-    // Serial.println("> WiFi.on() ... ");
+
     WiFi.on();
     delay(WIFI_SETTLING_TIME); // allow wifi to connect
-    // Serial.println("> Particle.connect() ... ");
+
     Particle.connect();
-    // Serial.print("> Connected: ");
-    // Serial.println(millis() - connectStartMillis);
-    // Serial.println("> Publish delay...");
     delay(PUBLISH_SETTLING_TIME); // to allow publish events
 
     // Set InfluxDB variables
@@ -111,7 +107,6 @@ void loop() {
       Serial.println("> InfluxDB updated");
     };
 
-    // Serial.println("> WiFi.off()");
     WiFi.off();
 
     lastPulseTimeMillis = millis();
@@ -144,7 +139,6 @@ void calculate_energy() {
 
   // calculate cost since midnight
   dailyCost = STANDING_CHARGE + elapsedEnergy*UNIT_COST;
-
 }
 
 // toggle onboard LED to represent received pulses
