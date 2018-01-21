@@ -45,7 +45,7 @@ long lastPulseTimeMillis;
 long connectStartMillis;
 
 // Midnight calculation variables
-int thishour, lasthour, thisminute, lastminute;
+int thisday, lastday;
 
 // Led pulse variable
 int state = 0; // used to toggle led
@@ -65,16 +65,6 @@ void setup() {
   pinMode(interruptPin, INPUT_PULLDOWN);
   attachInterrupt(interruptPin, flag_pulse, RISING);
 
-  // Set Particle variables
-  Particle.variable("power", power);
-  Particle.variable("elapsedEngy", elapsedEnergy);
-  Particle.variable("dailyCost", dailyCost);
-  Particle.variable("CycleDurn", cycleDurationMillis);
-
-  // Set Particle Functions
-  Particle.function("reset", resetDevice);
-  Particle.function("setCycle", setCycleDuration);
-
   // Set the device name in InfluxDB
   idb.setDeviceName("elmon");
 
@@ -86,8 +76,7 @@ void setup() {
   lastPulseTimeMillis = millis();
 
   // Initialise variables to detect midnight
-  thishour = Time.hour();
-  thisminute = Time.minute();
+  lastday = Time.weekday();
 }
 
 void loop() {
@@ -101,18 +90,16 @@ void loop() {
 
   // WiFi cycle handler
   if ( (millis() - lastPulseTimeMillis) > cycleDurationMillis) {
-    Serial.println("------------");
-
+    // Serial.println("------------");
     connectStartMillis = millis();
-    Serial.println("> WiFi.on() ... ");
+    // Serial.println("> WiFi.on() ... ");
     WiFi.on();
     delay(WIFI_SETTLING_TIME); // allow wifi to connect
-    Serial.println("> Particle.connect() ... ");
+    // Serial.println("> Particle.connect() ... ");
     Particle.connect();
-    Serial.print("> Connected: ");
-    Serial.println(millis() - connectStartMillis);
-
-    Serial.println("> Publish delay...");
+    // Serial.print("> Connected: ");
+    // Serial.println(millis() - connectStartMillis);
+    // Serial.println("> Publish delay...");
     delay(PUBLISH_SETTLING_TIME); // to allow publish events
 
     // Set InfluxDB variables
@@ -123,14 +110,14 @@ void loop() {
       Serial.println("> InfluxDB updated");
     };
 
-    Serial.println("> WiFi.off()");
+    // Serial.println("> WiFi.off()");
     WiFi.off();
 
     lastPulseTimeMillis = millis();
   }
 }
 
-// Interrupt handler. Called on the rising esge of a flash.
+// Interrupt handler. Called on the rising edge of a flash.
 void flag_pulse(){
   pulseFlag = true;
 }
@@ -147,8 +134,9 @@ void calculate_energy() {
   power = (3600000.0 / pulseInterval)/ppwh;
 
   // calculate energy used since midnight
-  if (isMidnight) {
+  if (Time.weekday() != lastday) {
     elapsedEnergy == 0;
+    lastday = Time.weekday();
   } else {
     elapsedEnergy = (1.0*pulseCount/(ppwh*1000)); //multiply by 1000 to convert pulses per wh to kwh
   }
@@ -164,23 +152,7 @@ void toggle_led() {
   state = !state;
 }
 
-// Reset elapsedEnergy if we've gone through midnight
-bool isMidnight() {
-    thishour = Time.hour();
-    thisminute = Time.minute();
-    // True for the e
-    // so this will fail only after the first minute has elapsed.  Assume negligible.
-    return (thishour == 0 && thisminute == 0);
-}
-
 int setCycleDuration(String duration) {
   cycleDurationMillis = atoi(duration) - WIFI_SETTLING_TIME - PUBLISH_SETTLING_TIME;
   return cycleDurationMillis;
-}
-
-int resetDevice(String command) {
-  Particle.publish("Resetting device");
-  delay(1000);
-  System.reset();
-  return 1;
 }
