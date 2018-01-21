@@ -19,11 +19,9 @@
 #define STANDING_CHARGE 32.877; // (pence / day) energy contract standing charge
 #define UNIT_COST 11.193; // (pence / kWh) energy contract unit cost
 
-// Ubidots configuration
-#include <Ubidots.h>
-#define DEVICE_ID "elmon"
-#define TOKEN "A1E-Ke3IBMVqyEUnzfGP9aDQRAmY2vGweM"  // Ubidots TOKEN
-Ubidots ubidots(TOKEN);
+// InfluxDB configuration
+#include "Influxdb.h"
+Influxdb idb = Influxdb(USERNAME, PASSWORD);
 
 // Pin assignments
 int interruptPin = D3;
@@ -77,14 +75,14 @@ void setup() {
   Particle.function("reset", resetDevice);
   Particle.function("setCycle", setCycleDuration);
 
-  // Set ubidots device label and ID
-  ubidots.setDeviceName(DEVICE_ID);
+  // Set the device name in InfluxDB
+  idb.setDeviceName("elmon");
 
   // Initialise pulseTime;
   pulseTime = millis();
 
   // Initialise WiFi cycle duration
-  setCycleDuration("60000");
+  setCycleDuration("30000");
   lastPulseTimeMillis = millis();
 
   // Initialise variables to detect midnight
@@ -117,12 +115,12 @@ void loop() {
     Serial.println("> Publish delay...");
     delay(PUBLISH_SETTLING_TIME); // to allow publish events
 
-    // Set ubidots variables
-    ubidots.add("power", power);
-    ubidots.add("elapsedEnergy", elapsedEnergy);
-    ubidots.add("dailyCost", dailyCost);
-    if(ubidots.sendAll()){
-      Serial.println("> Ubidots updated");
+    // Set InfluxDB variables
+    idb.add("power", power);
+    idb.add("elapsedEnergy", elapsedEnergy);
+    idb.add("dailyCost", dailyCost);
+    if(idb.sendAll()){
+      Serial.println("> InfluxDB updated");
     };
 
     Serial.println("> WiFi.off()");
@@ -130,8 +128,6 @@ void loop() {
 
     lastPulseTimeMillis = millis();
   }
-
-
 }
 
 // Interrupt handler. Called on the rising esge of a flash.
