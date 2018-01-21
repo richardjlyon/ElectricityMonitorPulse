@@ -77,6 +77,7 @@ void setup() {
 
   // Initialise variables to detect midnight
   lastday = Time.weekday();
+  Particle.publish("INFO", String::format("Monitor started with cycleduraton %dms", cycleDurationMillis), PRIVATE);
 }
 
 void loop() {
