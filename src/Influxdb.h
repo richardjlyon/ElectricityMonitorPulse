@@ -11,7 +11,6 @@
 #define MAX_VALUES 10
 #endif
 
-#include "authentication.h"
 #include "HttpClient.h"
 
 struct Value {

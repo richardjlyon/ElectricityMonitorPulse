@@ -23,6 +23,7 @@
 
 // InfluxDB configuration
 #include "Influxdb.h"
+#include "authentication.h"
 Influxdb idb = Influxdb(USERNAME, PASSWORD);
 
 // Pin assignments
