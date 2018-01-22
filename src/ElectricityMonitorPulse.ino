@@ -1,12 +1,12 @@
 /*
- * Project EnergyMonitorPulse
- * Description: Calculates electricity use from a meter's pulse output
- * Author: Richard Lyon
- * Date: 10 Jan 2018
- *
- * power: (Watts) the instantaneous power demand
- * elapsedEnergy: (kWh) energy consumption since midnight
- * dailyCost: (pence) daily energy cost
+ Project EnergyMonitorPulse
+ Description: Calculates electricity use from a meter's pulse output
+ Author: Richard Lyon
+ Date: 10 Jan 2018
+
+ power: (Watts) the instantaneous power demand
+ elapsedEnergy: (kWh) energy consumption since midnight
+ dailyCost: (pence) daily energy cost
  */
 
 #define VERSION 0.4
