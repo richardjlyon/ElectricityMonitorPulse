@@ -56,9 +56,6 @@ int state = 0; // used to toggle led
 // Interrupt control flag
 bool pulseFlag = false;
 
-// Particle Functions
-int resetDevice(String command);
-int setCycleDuration(String duration);
 
 void setup() {
   Serial.begin(9600);
