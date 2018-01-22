@@ -10,7 +10,9 @@ The basis of operation is the measurement of the time between LED pulses generat
 ### Output
 
 **power**: (Watts) the instantaneous power demand
+
 **elapsedEnergy**: (kWh) energy consumption since midnight
+
 **dailyCost**: (pence) daily energy cost
 
 
