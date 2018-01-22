@@ -24,3 +24,12 @@ The main part of `loop()` manages the device's WiFi state to reduce power consum
 At the start of the cycle, WiFi is turned on and the device reconnected. After settling time (empirically set via `WIFI_SETTLING_TIME` and `PUBLISH_SETTLING_TIME`), the InfluxDB buffer is uploaded to InfluxDB with `idb.sendAll()`. Then Wifi is switched off.
 
 In this way, the device stores power data in a low power mode, and connects only periodically (say, every 10 minutes) for the expensive upload operation.
+
+### Authentication
+
+You need authentication credentials for the InfluxDB service. For security, I've omitted these from this. To provide yours, create file `authentication.h` in `src` with the following:
+
+```
+#define USERNAME "your_username"
+#define PASSWORD "your_password"
+```
