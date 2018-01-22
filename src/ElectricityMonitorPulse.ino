@@ -9,6 +9,8 @@
  * dailyCost: (pence) daily energy cost
  */
 
+#define VERSION 0.4
+
 // Time between activating WiFi and connecting to Particle; trial and error
 #define WIFI_SETTLING_TIME 1000
 // Time between connecting to Particle and trying to publish anything
@@ -77,6 +79,7 @@ void setup() {
 
   // Initialise variables to detect midnight
   lastday = Time.weekday();
+  Particle.publish("FIRMWARE", String::format("%s", VERSION), PRIVATE);
   Particle.publish("INFO", String::format("Monitor started with cycleduraton %dms", cycleDurationMillis), PRIVATE);
 }
 
